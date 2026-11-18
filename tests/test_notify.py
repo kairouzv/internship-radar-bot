@@ -73,3 +73,55 @@ def test_build_notifiers_from_secrets():
     assert n.names == ["telegram", "discord"] and n.channels[0].chat_ids == ["1", "2"]
     assert build_notifiers(lambda k: "").names == ["console"]
     assert build_notifiers(lambda k: s(k, ""), dry_run=True).names == ["console"]
+
+
+# ── Notion ──────────────────────────────────────────────────────────────────────────────────
+
+def test_notion_creates_row_with_expected_properties(clf, mkjob):
+    from radar.notify.notion import NotionDB
+    seen = []
+
+    def h(req):
+        seen.append((str(req.url), dict(req.headers), json.loads(req.content)))
+        return httpx.Response(200, json={"object": "page"})
+    http = Http(httpx.AsyncClient(transport=httpx.MockTransport(h)), retries=0)
+    ch = NotionDB("secret_x", "https://www.notion.so/Internship-Radar-41c9a4501b658184bc36fbb8e6994256?v=abc")
+    run(ch.send_alert(http, alert(clf, mkjob)))
+    url, headers, body = seen[0]
+    assert url == "https://api.notion.com/v1/pages"
+    assert headers["authorization"] == "Bearer secret_x" and headers["notion-version"] == "2022-06-28"
+    assert body["parent"] == {"database_id": "41c9a4501b658184bc36fbb8e6994256"}
+    p = body["properties"]
+    assert p["Poste"]["title"][0]["text"]["content"] == "Stage M&A <H/F>"
+    assert p["Entreprise"]["rich_text"][0]["text"]["content"] == "Banque & Cie"
+    assert p["Match"]["select"]["name"] in ("Top", "Bon")
+    assert 0 < p["Score"]["number"] <= 100
+    assert "juin 2027" in p["Début"]["rich_text"][0]["text"]["content"].lower()
+    assert p["Lien"] == {"url": "https://x/1"}
+    assert p["Desk"]["multi_select"] and "," not in p["Desk"]["multi_select"][0]["name"]
+    assert "Statut" not in p            # jamais touché : la valeur par défaut « Pas encore » s'applique
+
+
+def test_notion_unknown_dates_is_flagged_for_check(clf, mkjob):
+    from radar.notify.notion import properties
+    j = mkjob(title="Stage M&A", company="Acme", url="https://x/2", location="Paris", description="")
+    a = Alert(j, clf.classify(j))
+    p = properties(a)
+    assert p["Match"]["select"]["name"] == "À vérifier"
+    assert p["Début"]["rich_text"][0]["text"]["content"] == "non indiqué"
+    assert "vérifier" in p["Commentaire"]["rich_text"][0]["text"]["content"]
+
+
+def test_notion_error_surfaces_with_share_hint(clf, mkjob):
+    from radar.notify.notion import NotionDB
+    http = Http(httpx.AsyncClient(transport=httpx.MockTransport(
+        lambda req: httpx.Response(404, json={"code": "object_not_found", "message": "Could not find database"}))), retries=0)
+    n = Notifiers([NotionDB("t", "41c9a4501b658184bc36fbb8e6994256")], pause=0)
+    assert run(n.alert(http, alert(clf, mkjob))) is False
+    assert "object_not_found" in n.errors[0] and "Connexions" in n.errors[0]
+
+
+def test_build_notifiers_adds_notion_only_with_both_secrets():
+    env = {"NOTION_TOKEN": "t", "NOTION_DATABASE_ID": "41c9a4501b658184bc36fbb8e6994256"}
+    assert "notion" in build_notifiers(lambda k, d="": env.get(k, d)).names
+    assert "notion" not in build_notifiers(lambda k, d="": {"NOTION_TOKEN": "t"}.get(k, d)).names
