@@ -142,6 +142,10 @@ def build_notifiers(secret, *, dry_run: bool = False, pause: float = 1.1) -> Not
     hook = secret("DISCORD_WEBHOOK_URL")
     if hook:
         channels.append(Discord(hook))
+    notion_token, notion_db = secret("NOTION_TOKEN"), secret("NOTION_DATABASE_ID")
+    if notion_token and notion_db:
+        from .notion import NotionDB
+        channels.append(NotionDB(notion_token, notion_db))
     if not channels:
         channels.append(Console())
     return Notifiers(channels, pause=pause)
