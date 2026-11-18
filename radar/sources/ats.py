@@ -317,6 +317,8 @@ class OracleHCM(Source):
             params={"expand": "all", "onlyData": "true", "finder": f'ById;Id="{job.extra["rid"]}",siteNumber={site}'},
         )
         it = (d.get("items") or [{}])[0]
+        if (it.get("Title") or "").strip():
+            job.title = it["Title"].strip()
         job.description = "\n".join(
             html_to_text(it.get(k)) for k in ("ExternalDescriptionStr", "ExternalResponsibilitiesStr", "ExternalQualificationsStr") if it.get(k)
         ) or job.description
