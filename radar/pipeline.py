@@ -8,6 +8,7 @@ from datetime import date, datetime, timedelta, timezone
 
 from .classify import Classifier, Verdict
 from .config import Config
+from .dedupe import DupIndex
 from .http import Http
 from .models import Job
 from .notify import Alert, Notifiers, Text
@@ -150,8 +151,10 @@ async def run_once(
 
     # 4. nouveaux candidats (stage + lieu plausible), dédoublonnés
     run_fps: set[str] = set()
+    seen_idx = DupIndex.from_store(store)
     fresh: list[tuple[str, Job]] = []
-    for key, jobs in raw.items():
+    # sources directes d'abord (fiche complète, lien officiel), agrégateurs (alertes e-mail) ensuite
+    for key, jobs in sorted(raw.items(), key=lambda kv: by_key[kv[0]].uses_store):
         first_time = store.get_meta(f"init:{key}") != "1"
         for j in jobs:
             if store.known_uid(j.uid):
@@ -159,10 +162,11 @@ async def run_once(
             ok, _, _ = clf.check_contract(j)
             if not ok or clf.check_location(j) is False:
                 continue
-            if store.known_fp(j.fingerprint) or j.fingerprint in run_fps:
+            if store.known_fp(j.fingerprint) or j.fingerprint in run_fps or seen_idx.match(j):
                 store.add_job(j, "DUP", 0, None, False)
                 continue
             run_fps.add(j.fingerprint)
+            seen_idx.add(j)
             fresh.append((key, j))
             report.new_jobs += 1
         if first_time:
