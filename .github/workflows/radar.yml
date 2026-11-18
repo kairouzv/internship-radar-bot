@@ -1,0 +1,65 @@
+name: radar
+
+on:
+  schedule:
+    # toutes les 10 minutes (minutes décalées : GitHub est moins chargé hors des :00 / :30)
+    - cron: "3,13,23,33,43,53 * * * *"
+  workflow_dispatch: {}
+
+concurrency:
+  group: radar-state          # un seul passage à la fois (l'état est partagé)
+  cancel-in-progress: false
+
+permissions:
+  contents: write             # écrire la branche « state »
+  actions: write              # garder le workflow actif (voir plus bas)
+
+jobs:
+  radar:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - run: pip install -r requirements.txt
+
+      - name: Restaurer l'état
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: scripts/state.sh restore
+
+      - name: Passage du radar
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          TELEGRAM_THREAD_ID: ${{ secrets.TELEGRAM_THREAD_ID }}
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          IMAP_USER: ${{ secrets.IMAP_USER }}
+          IMAP_PASSWORD: ${{ secrets.IMAP_PASSWORD }}
+          IMAP_HOST: ${{ secrets.IMAP_HOST }}
+          ADZUNA_APP_ID: ${{ secrets.ADZUNA_APP_ID }}
+          ADZUNA_APP_KEY: ${{ secrets.ADZUNA_APP_KEY }}
+          FRANCETRAVAIL_CLIENT_ID: ${{ secrets.FRANCETRAVAIL_CLIENT_ID }}
+          FRANCETRAVAIL_CLIENT_SECRET: ${{ secrets.FRANCETRAVAIL_CLIENT_SECRET }}
+        run: python -m radar run
+
+      - name: Sauvegarder l'état
+        if: always()
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: scripts/state.sh save
+
+      # GitHub désactive les workflows planifiés après 60 jours sans activité : on les « réactive » chaque nuit.
+      - name: Garder le workflow actif
+        if: always()
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if [ "$(date -u +%H)" = "00" ]; then
+            gh api -X PUT "repos/${GITHUB_REPOSITORY}/actions/workflows/radar.yml/enable" || true
+          fi

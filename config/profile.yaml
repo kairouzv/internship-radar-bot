@@ -1,0 +1,138 @@
+# ─────────────────────────────────────────────────────────────────────────────────────────────
+#  PROFIL DE RECHERCHE — c'est ici que tu règles la précision du bot.
+#  Tout est comparé sur du texte sans accents ni majuscules : écris les mots-clés comme tu veux.
+# ─────────────────────────────────────────────────────────────────────────────────────────────
+
+# ── Fenêtre de stage ──────────────────────────────────────────────────────────────────────────
+# Hypothèse de départ : fin des cours en avril 2027, 4 à 6 mois d'expérience exigés après.
+# Ajuste ces dates si ton calendrier change (format AAAA-MM-JJ).
+window:
+  earliest_start: 2027-04-25     # début de stage au plus tôt
+  latest_start: 2027-09-31       # début de stage au plus tard
+  min_months: 4                  # durée minimale acceptée
+  max_months: 6                  # durée maximale acceptée
+  duration_tolerance: 0.3        # tolérance en mois (6 mois et 1 semaine passent)
+  # Que faire des offres dont la date de début est « dès que possible » ?
+  #   digest = résumé du matin seulement | notify = alerte immédiate | reject = ignorer
+  asap_policy: digest
+  # Que faire des offres sans aucune date détectable (très fréquent) ?
+  #   notify = alerte immédiate marquée « dates à vérifier » | digest | reject
+  unknown_dates_policy: notify
+
+# ── Type de contrat ───────────────────────────────────────────────────────────────────────────
+contract:
+  accept_alternance: false       # alternance / apprentissage
+  accept_vie: false              # VIE (volontariat international)
+  accept_graduate_programs: false
+
+# ── Lieux ─────────────────────────────────────────────────────────────────────────────────────
+locations:
+  include:
+    # Paris et petite couronne / La Défense
+    - paris
+    - ile-de-france
+    - ile de france
+    - idf
+    - la defense
+    - puteaux
+    - courbevoie
+    - neuilly
+    - boulogne-billancourt
+    - issy-les-moulineaux
+    - levallois
+    - nanterre
+    - saint-denis
+    - rueil-malmaison
+    # Genève
+    - geneva
+    - geneve
+    - genf
+    - ginevra
+    - carouge
+    - lancy
+    - meyrin
+    - plan-les-ouates
+  exclude:                       # homonymes à écarter
+    - "paris, tx"
+    - "paris, texas"
+    - "paris, tn"
+    - "paris, ky"
+    - "paris, ontario"
+    - "paris, on"
+
+# ── Métiers visés ─────────────────────────────────────────────────────────────────────────────
+# weight = pertinence (0-100). Un mot-clé dans le TITRE compte à 100 %, dans la description à 70 %.
+desks:
+  - name: M&A
+    weight: 100
+    patterns: ["m&a", "m & a", "m and a", "mergers & acquisitions", "mergers and acquisitions",
+               "mergers", "fusions-acquisitions", "fusions acquisitions", "fusion-acquisition",
+               "fusions et acquisitions", "ma advisory", "corporate finance advisory", "conseil en fusions"]
+  - name: Leveraged Finance
+    weight: 100
+    patterns: ["leveraged finance", "levfin", "lev fin", "leveraged loan", "leveraged loans",
+               "acquisition finance", "acquisition financing", "financement d'acquisition",
+               "financements d'acquisition", "financement lbo", "lbo financing",
+               "effet de levier", "high yield", "leveraged capital markets", "financial sponsors",
+               "sponsor coverage", "sponsors"]
+  - name: Coverage / Investment Banking
+    weight: 90
+    patterns: ["investment banking", "investment bank", "banque d'investissement", "coverage",
+               "couverture", "origination", "corporate finance", "global banking",
+               "corporate and investment banking", "cib", "debt advisory", "conseil en financement",
+               "financement corporate", "relation clients large corporate", "large corporate"]
+  - name: Private Equity / Private Debt
+    weight: 80
+    patterns: ["private equity", "capital investissement", "capital-investissement", "private debt",
+               "dette privee", "direct lending", "mezzanine", "buyout", "lbo", "growth equity",
+               "private markets", "marches prives"]
+  - name: Capital Markets
+    weight: 75
+    patterns: ["dcm", "ecm", "debt capital markets", "equity capital markets", "capital markets",
+               "marches de capitaux", "syndication"]
+  - name: Restructuring
+    weight: 70
+    patterns: ["restructuring", "restructuration", "special situations", "distressed"]
+  - name: Deal Structuring
+    weight: 60
+    patterns: ["deal structuring", "structuration", "structuring", "structured finance",
+               "financement structure", "financements structures", "project finance", "financement de projet",
+               "asset finance"]
+  - name: Corporate Banking / Credit
+    weight: 50
+    patterns: ["corporate banking", "credit analyst", "analyste credit", "analyse credit",
+               "charge d'affaires", "corporate lending"]
+  - name: Valuation / Transaction Services
+    weight: 45
+    patterns: ["valuation", "evaluation financiere", "transaction services", "financial due diligence",
+               "due diligence", "fdd", "modelisation financiere", "financial modeling", "financial modelling"]
+  - name: Finance (générique)
+    weight: 35
+    patterns: ["financial analyst", "analyste financier", "analyste finance", "finance", "financier"]
+  - name: Banque privée / Gestion
+    weight: 35
+    patterns: ["private banking", "banque privee", "wealth management", "gestion de fortune",
+               "asset management", "gestion d'actifs"]
+
+# Mots qui disqualifient un titre (métiers hors cible)
+exclude_title:
+  ["software", "developer", "developpeur", "engineer", "ingenieur", "data scientist", "devops", "cyber",
+   "informatique", "marketing", "communication", "digital", "ressources humaines", "human resources",
+   "recrutement", "recruitment", "talent", "juridique", "legal", "juriste", "lawyer", "comptable",
+   "accounting", "comptabilite", "audit", "compliance", "conformite", "back office", "middle office",
+   "operations", "customer service", "service client", "assistant", "assistante", "secretaire",
+   "facility", "procurement", "achats", "supply chain", "logistique", "rse", "esg reporting"]
+
+# ── Seuils (0-100) ────────────────────────────────────────────────────────────────────────────
+thresholds:
+  notify: 60      # ≥ : alerte immédiate
+  top: 85         # ≥ et dates conformes : alerte 🔥
+  digest: 35      # ≥ : mentionné dans le résumé du matin ; en dessous : ignoré
+
+# ── Notifications ─────────────────────────────────────────────────────────────────────────────
+notifications:
+  digest_hour_paris: 8            # heure du résumé quotidien (info : réglée dans digest.yml)
+  bootstrap_top_n: 10             # au 1er lancement : un seul message avec les N meilleures offres déjà ouvertes
+  max_alerts_per_run: 25          # garde-fou anti-spam
+  # En cas d'échec répété d'une source qui marchait avant : alerte après N exécutions
+  source_failure_alert_after: 6

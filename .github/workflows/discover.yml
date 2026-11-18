@@ -1,0 +1,31 @@
+name: discover
+
+# Détecte l'ATS d'une page carrières et affiche la configuration à coller dans config/sources.yaml.
+on:
+  workflow_dispatch:
+    inputs:
+      url:
+        description: "URL de la page carrières (ex. https://www.lazard.com/careers/)"
+        required: true
+      name:
+        description: "Nom de la source (ex. Lazard)"
+        required: true
+
+jobs:
+  discover:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - run: pip install -r requirements.txt
+      - name: radar discover
+        env:
+          INPUT_URL: ${{ github.event.inputs.url }}
+          INPUT_NAME: ${{ github.event.inputs.name }}
+        run: |
+          python -m radar discover "$INPUT_URL" --name "$INPUT_NAME" | tee out.txt || true
+          { echo '### radar discover'; echo '```yaml'; cat out.txt; echo '```'; } >> "$GITHUB_STEP_SUMMARY"

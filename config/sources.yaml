@@ -1,0 +1,121 @@
+# ─────────────────────────────────────────────────────────────────────────────────────────────
+#  SOURCES SURVEILLÉES
+#
+#  Le bot interroge toutes ces sources en parallèle à chaque passage (~10 min).
+#  • type: auto  → tu donnes la page carrières, le bot détecte tout seul l'ATS (Workday, Greenhouse, Lever…).
+#  • Pour désactiver une source : enabled: false.   Pour la tester seule : radar doctor --only NOM
+#  • « radar doctor » dit en 1 minute quelles sources répondent vraiment depuis ta machine / GitHub.
+#  • Une source en échec n'empêche jamais les autres de tourner.
+#
+#  ⚠️ Les URLs de pages carrières ci-dessous sont des points de départ : certaines changent ou sont
+#     rendues en JavaScript. Lance « radar doctor », puis corrige/désactive celles qui sont en FAIL
+#     (voir le README, section « Ajouter une entreprise »).
+# ─────────────────────────────────────────────────────────────────────────────────────────────
+sources:
+
+  # ══ 1. ALERTES E-MAIL (couverture LinkedIn, Indeed, Welcome to the Jungle, eFinancialCareers, jobs.ch…) ══
+  # Le plus puissant : les job boards t'envoient eux-mêmes les offres. Voir README « Alertes e-mail ».
+  - name: Alertes-mail
+    type: email
+    folder: JobAlerts            # libellé Gmail qui reçoit tes alertes
+    days: 3
+    trust_internship: true       # tes alertes sont déjà filtrées « stage » côté site
+    every_minutes: 10
+
+  # ══ 2. APIs GRATUITES D'AGRÉGATEURS (clés à créer, voir README) ═══════════════════════════════════
+  - name: Adzuna-Paris
+    type: adzuna
+    country: fr
+    where: Paris
+    search: ["stage m&a", "stage corporate finance", "stage private equity", "stage leveraged finance",
+             "stage investment banking", "stage financement d'acquisition"]
+    days: 3
+    every_minutes: 60
+  - name: Adzuna-Geneve
+    type: adzuna
+    country: ch
+    where: Genève
+    search: ["stage finance", "internship investment banking", "internship private equity", "stage corporate finance"]
+    days: 3
+    every_minutes: 60
+  - name: FranceTravail
+    type: francetravail
+    search: ["stage m&a", "stage corporate finance", "stage private equity", "stage financement"]
+    departements: ["75", "92"]
+    days: 3
+    every_minutes: 60
+
+  # ══ 3. ATS CONNUS (config directe, la plus fiable quand elle est juste) ══════════════════════════
+  - name: JPMorgan
+    type: oracle_hcm
+    host: jpmc.fa.oraclecloud.com
+    site: CX_1001
+    search: ["intern", "internship", "stage", "summer analyst"]
+    verified: false              # à confirmer avec « radar doctor --only JPMorgan »
+  - name: Citi
+    type: workday
+    host: citi.wd5.myworkdayjobs.com
+    site: "2"
+    search: ["intern", "internship", "stage"]
+    verified: false
+
+  # ══ 4. BANQUES & BOUTIQUES M&A / COVERAGE (détection automatique de l'ATS) ═══════════════════════
+  - {name: Rothschild-Co,   type: auto, url: "https://www.rothschildandco.com/en/careers/"}
+  - {name: Lazard,          type: auto, url: "https://www.lazard.com/careers/"}
+  - {name: Evercore,        type: auto, url: "https://www.evercore.com/careers/"}
+  - {name: Houlihan-Lokey,  type: auto, url: "https://www.hl.com/careers/"}
+  - {name: Moelis,          type: auto, url: "https://www.moelis.com/careers/"}
+  - {name: PJT-Partners,    type: auto, url: "https://www.pjtpartners.com/careers"}
+  - {name: Perella-Weinberg, type: auto, url: "https://www.pwpartners.com/careers/"}
+  - {name: Jefferies,       type: auto, url: "https://www.jefferies.com/careers/"}
+  - {name: Goldman-Sachs,   type: auto, url: "https://www.goldmansachs.com/careers/"}
+  - {name: Morgan-Stanley,  type: auto, url: "https://www.morganstanley.com/careers"}
+  - {name: Bank-of-America, type: auto, url: "https://careers.bankofamerica.com/"}
+  - {name: Barclays,        type: auto, url: "https://search.jobs.barclays/"}
+  - {name: Deutsche-Bank,   type: auto, url: "https://careers.db.com/"}
+  - {name: HSBC,            type: auto, url: "https://www.hsbc.com/careers"}
+  - {name: UBS,             type: auto, url: "https://www.ubs.com/global/en/careers.html"}
+  - {name: BNP-Paribas,     type: auto, url: "https://group.bnpparibas/emploi-carriere/toutes-offres-emploi"}
+  - {name: Societe-Generale, type: auto, url: "https://careers.societegenerale.com/"}
+  - {name: Credit-Agricole-CIB, type: auto, url: "https://www.ca-cib.com/join-us"}
+  - {name: Natixis,         type: auto, url: "https://www.natixis.com/en/careers"}
+
+  # ══ 5. PRIVATE EQUITY / DETTE PRIVÉE / FONDS ════════════════════════════════════════════════════
+  - {name: Ardian,          type: auto, url: "https://www.ardian.com/careers"}
+  - {name: Eurazeo,         type: auto, url: "https://www.eurazeo.com/en/careers"}
+  - {name: PAI-Partners,    type: auto, url: "https://www.paipartners.com/careers/"}
+  - {name: Cinven,          type: auto, url: "https://www.cinven.com/careers/"}
+  - {name: CVC,             type: auto, url: "https://www.cvc.com/careers/"}
+  - {name: Apax,            type: auto, url: "https://www.apax.com/careers/"}
+  - {name: Permira,         type: auto, url: "https://www.permira.com/careers"}
+  - {name: KKR,             type: auto, url: "https://www.kkr.com/careers"}
+  - {name: Carlyle,         type: auto, url: "https://www.carlyle.com/careers"}
+  - {name: EQT,             type: auto, url: "https://eqtgroup.com/careers"}
+  - {name: Bridgepoint,     type: auto, url: "https://www.bridgepoint.eu/careers"}
+  - {name: Tikehau-Capital, type: auto, url: "https://www.tikehaucapital.com/en/careers"}
+  - {name: Antin,           type: auto, url: "https://www.antin-ip.com/careers"}
+  - {name: Partners-Group,  type: auto, url: "https://www.partnersgroup.com/en/careers/"}
+  - {name: Ares,            type: auto, url: "https://www.aresmgmt.com/careers"}
+  - {name: Apollo,          type: auto, url: "https://www.apollo.com/careers"}
+  - {name: Blackstone,      type: auto, url: "https://www.blackstone.com/careers/"}
+  - {name: Hayfin,          type: auto, url: "https://www.hayfin.com/careers/"}
+
+  # ══ 6. GENÈVE (banque privée, gestion, trade finance) ═══════════════════════════════════════════
+  - {name: Pictet,          type: auto, url: "https://www.pictet.com/careers", location_hint: "Genève"}
+  - {name: Lombard-Odier,   type: auto, url: "https://www.lombardodier.com/careers", location_hint: "Genève"}
+  - {name: Julius-Baer,     type: auto, url: "https://www.juliusbaer.com/en/careers/"}
+  - {name: UBP,             type: auto, url: "https://www.ubp.com/en/careers", location_hint: "Genève"}
+  - {name: EFG,             type: auto, url: "https://www.efginternational.com/careers"}
+
+  # ══ MODÈLES (décommente et adapte pour ajouter une entreprise précise) ═══════════════════════════
+  # - {name: Exemple-Greenhouse, type: greenhouse, board: "ardian"}
+  # - {name: Exemple-Lever, type: lever, site: "nom-societe"}           # region: eu si jobs.eu.lever.co
+  # - {name: Exemple-SmartRecruiters, type: smartrecruiters, company: "NomSociete", country: fr}
+  # - {name: Exemple-Workday, type: workday, host: "societe.wd3.myworkdayjobs.com", site: "Careers"}
+  # - {name: Exemple-Ashby, type: ashby, board: "societe"}
+  # - {name: Exemple-Workable, type: workable, account: "societe"}
+  # - {name: Exemple-Recruitee, type: recruitee, company: "societe"}
+  # - {name: Exemple-Personio, type: personio, company: "societe", tld: de}
+  # - {name: Exemple-RSS, type: rss, url: "https://societe.teamtailor.com/jobs.rss"}
+  # - {name: Exemple-Page, type: html, url: "https://societe.com/careers", link_selector: "a[href*='/jobs/']", include_regex: "/jobs/"}
+  # - {name: Exemple-Sitemap, type: sitemap, url: "https://societe.com/sitemap.xml", url_regex: "/(jobs|offres)/"}
