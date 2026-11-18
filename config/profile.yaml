@@ -8,7 +8,7 @@
 # Ajuste ces dates si ton calendrier change (format AAAA-MM-JJ).
 window:
   earliest_start: 2027-04-25     # début de stage au plus tôt
-  latest_start: 2027-09-31       # début de stage au plus tard
+  latest_start: 2027-09-30       # début de stage au plus tard
   min_months: 4                  # durée minimale acceptée
   max_months: 6                  # durée maximale acceptée
   duration_tolerance: 0.3        # tolérance en mois (6 mois et 1 semaine passent)
