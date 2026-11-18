@@ -68,6 +68,8 @@ desks:
     patterns: ["m&a", "m & a", "m and a", "mergers & acquisitions", "mergers and acquisitions",
                "mergers", "fusions-acquisitions", "fusions acquisitions", "fusion-acquisition",
                "fusions et acquisitions", "ma advisory", "corporate finance advisory", "conseil en fusions"]
+  - {name: Venture Capital, weight: 80, patterns: ["venture capital", "capital risque", "capital-risque", "vc", "venture investing", "venture investor"]}
+  - {name: Investor Relations, weight: 75, patterns: ["investor relations", "relations investisseurs", "relation investisseurs", "relations investisseur", "ir", "fundraising", "levee de fonds", "capital raising", "lp relations"]}
   - name: Leveraged Finance
     weight: 100
     patterns: ["leveraged finance", "levfin", "lev fin", "leveraged loan", "leveraged loans",
