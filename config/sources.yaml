@@ -17,9 +17,9 @@ sources:
   # Le plus puissant : les job boards t'envoient eux-mêmes les offres. Voir README « Alertes e-mail ».
   - name: Alertes-mail
     type: email
-    folder: JobAlerts            # libellé Gmail qui reçoit tes alertes
+    folder: INBOX            # libellé Gmail qui reçoit tes alertes
     days: 3
-    trust_internship: true       # tes alertes sont déjà filtrées « stage » côté site
+    trust_internship: false       # tes alertes sont déjà filtrées « stage » côté site
     every_minutes: 10
 
   # ══ 2. APIs GRATUITES D'AGRÉGATEURS (clés à créer, voir README) ═══════════════════════════════════
